@@ -56,6 +56,13 @@ pub const Content = struct {
         }
         defer im.end();
 
+        _ = im.dragFloat("Kelvin", .{ .v = &this.temperature_kelvin });
+
+        var celsius = kelvinToCelsius(this.temperature_kelvin);
+        if (im.dragFloat("Celsius", .{ .v = &celsius })) {
+            this.temperature_kelvin = celsiusToKelvin(celsius);
+        }
+
         var fahrenheit = kelvinToFahrenheit(this.temperature_kelvin);
         if (im.dragFloat("Fahrenheit", .{ .v = &fahrenheit })) {
             this.temperature_kelvin = fahrenheitToKelvin(fahrenheit);
@@ -68,6 +75,14 @@ pub const Content = struct {
 
     fn fahrenheitToKelvin(fahrenheit: f32) f32 {
         return ((fahrenheit - 32) / 1.8) + 273;
+    }
+
+    fn kelvinToCelsius(kelvin: f32) f32 {
+        return (kelvin - 273.15);
+    }
+
+    fn celsiusToKelvin(celsius: f32) f32 {
+        return celsius + 273.15;
     }
 };
 
