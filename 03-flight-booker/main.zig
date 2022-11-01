@@ -38,6 +38,8 @@ pub fn deinit(_: *App, _: *mach.Core) void {
 
 pub const Content = struct {
     ticket_kind: TicketKind = .one_way_flight,
+    ticket_date: [50:0]u8 = "2022-10-31".* ++ ([_]u8{undefined} ** 40),
+    return_date: [50:0]u8 = "2022-10-31".* ++ ([_]u8{undefined} ** 40),
 
     const TicketKind = enum {
         one_way_flight,
@@ -78,8 +80,33 @@ pub const Content = struct {
             }
         }
         switch (this.ticket_kind) {
-            .one_way_flight => {},
-            .return_flight => {},
+            .one_way_flight => {
+                _ = im.inputTextWithHint("Date", .{
+                    .hint = "",
+                    .buf = &this.ticket_date,
+                });
+            },
+            .return_flight => {
+                _ = im.inputTextWithHint("Outgoing Date", .{
+                    .hint = "",
+                    .buf = &this.ticket_date,
+                });
+                _ = im.inputTextWithHint("Returning Date", .{
+                    .hint = "",
+                    .buf = &this.return_date,
+                });
+            },
+        }
+
+        if (im.button("Book", .{})) {
+            switch (this.ticket_kind) {
+                .one_way_flight => {
+                    std.debug.print("Booked {s} flight for {s}!\n", .{ this.ticket_kind.displayName(), this.ticket_date });
+                },
+                .return_flight => {
+                    std.debug.print("Booked {s} flight for {s} and {s}!\n", .{ this.ticket_kind.displayName(), this.ticket_date, this.return_date });
+                },
+            }
         }
     }
 };
