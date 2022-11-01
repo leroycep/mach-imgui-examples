@@ -81,20 +81,39 @@ pub const Content = struct {
         }
         switch (this.ticket_kind) {
             .one_way_flight => {
+                const date_error = if (parseDate(std.mem.sliceTo(&this.ticket_date, 0))) |_|
+                    false
+                else |_|
+                    true;
+                if (date_error) im.pushStyleColor1u(.{ .idx = .frame_bg, .c = 0xFF_00_00_FF });
                 _ = im.inputTextWithHint("Date", .{
                     .hint = "",
                     .buf = &this.ticket_date,
                 });
+                if (date_error) im.popStyleColor(.{});
             },
             .return_flight => {
+                const outgoing_date_error = if (parseDate(std.mem.sliceTo(&this.ticket_date, 0))) |_|
+                    false
+                else |_|
+                    true;
+                if (outgoing_date_error) im.pushStyleColor1u(.{ .idx = .frame_bg, .c = 0xFF_00_00_FF });
                 _ = im.inputTextWithHint("Outgoing Date", .{
                     .hint = "",
                     .buf = &this.ticket_date,
                 });
+                if (outgoing_date_error) im.popStyleColor(.{});
+
+                const return_date_error = if (parseDate(std.mem.sliceTo(&this.return_date, 0))) |_|
+                    false
+                else |_|
+                    true;
+                if (return_date_error) im.pushStyleColor1u(.{ .idx = .frame_bg, .c = 0xFF_00_00_FF });
                 _ = im.inputTextWithHint("Returning Date", .{
                     .hint = "",
                     .buf = &this.return_date,
                 });
+                if (return_date_error) im.popStyleColor(.{});
             },
         }
 
@@ -108,6 +127,29 @@ pub const Content = struct {
                 },
             }
         }
+    }
+
+    const Date = struct {
+        year: i32,
+        month: i32,
+        day: i32,
+    };
+
+    fn parseDate(text: []const u8) !Date {
+        var segment_iter = std.mem.split(u8, text, "-");
+        const year_str = segment_iter.next() orelse return error.InvalidFormat;
+        const month_str = segment_iter.next() orelse return error.InvalidFormat;
+        const day_str = segment_iter.next() orelse return error.InvalidFormat;
+
+        const year = try std.fmt.parseInt(i32, year_str, 10);
+        const month = try std.fmt.parseInt(i32, month_str, 10);
+        const day = try std.fmt.parseInt(i32, day_str, 10);
+
+        return Date{
+            .year = year,
+            .month = month,
+            .day = day,
+        };
     }
 };
 
