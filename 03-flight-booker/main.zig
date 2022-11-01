@@ -79,6 +79,8 @@ pub const Content = struct {
                 }
             }
         }
+
+        var is_any_date_error = false;
         switch (this.ticket_kind) {
             .one_way_flight => {
                 const date_error = if (parseDate(std.mem.sliceTo(&this.ticket_date, 0))) |_|
@@ -91,12 +93,15 @@ pub const Content = struct {
                     .buf = &this.ticket_date,
                 });
                 if (date_error) im.popStyleColor(.{});
+
+                is_any_date_error = is_any_date_error or date_error;
             },
             .return_flight => {
                 const outgoing_date_error = if (parseDate(std.mem.sliceTo(&this.ticket_date, 0))) |_|
                     false
                 else |_|
                     true;
+                is_any_date_error = is_any_date_error or outgoing_date_error;
                 if (outgoing_date_error) im.pushStyleColor1u(.{ .idx = .frame_bg, .c = 0xFF_00_00_FF });
                 _ = im.inputTextWithHint("Outgoing Date", .{
                     .hint = "",
@@ -108,6 +113,7 @@ pub const Content = struct {
                     false
                 else |_|
                     true;
+                is_any_date_error = is_any_date_error or return_date_error;
                 if (return_date_error) im.pushStyleColor1u(.{ .idx = .frame_bg, .c = 0xFF_00_00_FF });
                 _ = im.inputTextWithHint("Returning Date", .{
                     .hint = "",
@@ -117,6 +123,7 @@ pub const Content = struct {
             },
         }
 
+        if (is_any_date_error) im.beginDisabled(.{});
         if (im.button("Book", .{})) {
             switch (this.ticket_kind) {
                 .one_way_flight => {
@@ -127,6 +134,7 @@ pub const Content = struct {
                 },
             }
         }
+        if (is_any_date_error) im.endDisabled();
     }
 
     const Date = struct {
